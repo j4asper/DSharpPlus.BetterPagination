@@ -82,3 +82,7 @@ In this example:
 -   Two pages are created using `DiscordEmbedBuilder`, each with different content.
 -   These pages are added to a `List<Page>`, which is passed to the `SendBetterPaginatedMessageAsync` method to send a paginated message.
 -   Users can navigate between pages using the forward and back buttons that are automatically added to the message.
+
+Example of paginated message with 4 pages and an additional button.
+
+![Paginated Example](.github/images/example.png)
