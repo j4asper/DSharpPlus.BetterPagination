@@ -58,23 +58,20 @@ Here’s an example of how to use the package to send a paginated message within
 public async ValueTask PaginatedExampleCommand(SlashCommandContext context)
 {
     var embedPageOne = new DiscordEmbedBuilder()
-        .WithDefaultColor()
-        .WithContent("This is page 1");
+        .WithDescription("This is page 1");
 
     var embedPageTwo = new DiscordEmbedBuilder()
-        .WithDefaultColor()
-        .WithContent("This is page 2");
+        .WithDescription("This is page 2");
 
-    List<Page> pages = new()
-    {
-        new Page { Embed = embedPageOne },
-        new Page { Embed = embedPageTwo }
-    };
+    List<Page> pages =
+    [
+        new() { Embed = embedPageOne },
+        new() { Embed = embedPageTwo }
+    ];
 
     // Send the paginated message
     await context.SendBetterPaginatedMessageAsync(pages);
 }
-
 ```
 
 In this example:
