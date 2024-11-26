@@ -1,6 +1,6 @@
 # BetterPagination
 
-This NuGet package provides an enhanced pagination experience for DSharpPlus, offering a better visual interface for navigating between paginated content.
+This NuGet package provides an enhanced pagination experience for [DSharpPlus](https://github.com/DSharpPlus/DSharpPlus), offering a better visual interface for navigating between paginated content.
 
 [![NuGet Version](https://img.shields.io/nuget/v/J4asper.DSharpPlus.BetterPagination)](https://www.nuget.org/packages/J4asper.DSharpPlus.BetterPagination/)
 
