@@ -1,4 +1,5 @@
 using DSharpPlus.BetterPagination.Helpers;
+using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
@@ -6,13 +7,13 @@ using DSharpPlus.Interactivity.Extensions;
 
 namespace DSharpPlus.BetterPagination.Extensions;
 
-public static class SlashCommandContextExtensions
+public static class CommandContextExtensions
 {
     /// <summary>
     /// Sends a paginated message with forward and back buttons that allow users to navigate through pages of content.
     /// The method supports an optional set of additional components (e.g., buttons) and restricts usage to the invoking user if required.
     /// </summary>
-    /// <param name="context">The context of the slash command invocation, containing user information and interaction context.</param>
+    /// <param name="commandContext">The context of the command invocation, containing user information and interaction context.</param>
     /// <param name="pages">A read-only list of <see cref="Page"/> objects, each containing an embed to be displayed on the paginated message.</param>
     /// <param name="additionalComponents">Optional additional components (e.g., buttons, select menus) to be added to the message. Default is null.</param>
     /// <param name="asEphemeral">A flag indicating whether the paginated message should be sent as an ephemeral message. If set to true, the message will only be visible to the user who invoked the command. Default is false.</param>
@@ -24,12 +25,15 @@ public static class SlashCommandContextExtensions
     /// If the <paramref name="allowUsageByAnyone"/> flag is set to false, only the user who invoked the command can interact with the buttons.
     /// </remarks>
     public static async Task SendBetterPaginatedMessageAsync(
-        this SlashCommandContext context,
+        this CommandContext commandContext,
         IReadOnlyList<Page> pages,
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
         bool asEphemeral = false,
         bool allowUsageByAnyone = false)
     {
+        var context = commandContext as SlashCommandContext
+                                      ?? throw new InvalidCastException("CommandContext is not a SlashCommandContext.");
+        
         var pageCount = pages.Count;
         
         var currentPage = 1;
@@ -49,7 +53,7 @@ public static class SlashCommandContextExtensions
             if (response.TimedOut)
             {
                 await SendTimeoutResponseAsync(message, pages, pageCount, components, additionalComponents);
-                
+
                 timedOut = true;
             }
             else
@@ -64,33 +68,18 @@ public static class SlashCommandContextExtensions
                     currentPage++;
 
                 var updatedComponents = CreatePaginationComponents(currentPage, pageCount, components[2].CustomId, components[0].CustomId);
-                
+
                 var interactionResponse = new DiscordInteractionResponseBuilder()
-                    .AddComponents(updatedComponents);
-                
-                var page = pages[currentPage - 1];
-                
-                interactionResponse.AddEmbed(page.Embed);
-                
-                if (page.Components.Count > 0)
-                    interactionResponse.AddComponents(page.Components);
+                    .AddComponents(updatedComponents)
+                    .WithPageContent(pages[currentPage - 1])
+                    .WithPaginationArgs(additionalComponents, asEphemeral);
 
-                if (string.IsNullOrEmpty(page.Content))
-                    interactionResponse.WithContent(page.Content);
-                
-                if (asEphemeral)
-                    interactionResponse.AsEphemeral();
-
-                if (additionalComponents != null)
-                    interactionResponse.AddComponents(additionalComponents);
-
-                await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
-                    interactionResponse);
+                await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, interactionResponse);
             }
         }
     }
 
-    private static List<DiscordComponent> CreatePaginationComponents(int currentPage, int pageCount, string? forwardButtonId = null, string? backButtonId = null)
+    private static IReadOnlyList<DiscordComponent> CreatePaginationComponents(int currentPage, int pageCount, string? forwardButtonId = null, string? backButtonId = null)
     {
         forwardButtonId ??= Guid.NewGuid().ToString();
         backButtonId ??= Guid.NewGuid().ToString();
@@ -109,30 +98,15 @@ public static class SlashCommandContextExtensions
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
         bool asEphemeral = false)
     {
-        var page = pages[0];
-        
         var interactionResponse = new DiscordInteractionResponseBuilder()
-            .AddComponents(components);
+            .AddComponents(components)
+            .WithPageContent(pages[0])
+            .WithPaginationArgs(additionalComponents, asEphemeral);
         
-        interactionResponse.AddEmbed(page.Embed);
-
-        if (page.Components.Count > 0)
-            interactionResponse.AddComponents(page.Components);
-
-        if (string.IsNullOrEmpty(page.Content))
-            interactionResponse.WithContent(page.Content);
-        
-        if (asEphemeral)
-            interactionResponse.AsEphemeral();
-        
-        if (additionalComponents != null)
-            interactionResponse.AddComponents(additionalComponents);
-
-        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
-            interactionResponse);
+        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, interactionResponse);
 
         var message = await context.Interaction.GetOriginalResponseAsync();
-        
+
         return message;
     }
 
@@ -143,21 +117,9 @@ public static class SlashCommandContextExtensions
         IReadOnlyList<DiscordComponent> components,
         IReadOnlyList<DiscordComponent>? additionalComponents = null)
     {
-        var page = pages[currentPage - 1];
-        
         var timedOutResponse = new DiscordMessageBuilder()
-            .AddComponents(components);
-        
-        timedOutResponse.AddEmbed(page.Embed);
-
-        if (page.Components.Count > 0)
-            timedOutResponse.AddComponents(page.Components);
-
-        if (string.IsNullOrEmpty(page.Content))
-            timedOutResponse.WithContent(page.Content);
-        
-        if (additionalComponents != null)
-            timedOutResponse.AddComponents(additionalComponents);
+            .AddComponents(components)
+            .WithPaginationArgs(pages[currentPage - 1], additionalComponents);
 
         await message.ModifyAsync(timedOutResponse);
     }
