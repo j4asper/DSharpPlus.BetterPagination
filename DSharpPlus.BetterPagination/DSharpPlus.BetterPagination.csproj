@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <NoWarn>NU5104</NoWarn>
+        <NoWarn>CS1591</NoWarn>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
         <PackageReadmeFile>README.md</PackageReadmeFile>
