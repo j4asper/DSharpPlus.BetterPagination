@@ -4,8 +4,8 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>Jasper Onsberg Christiansen</Authors>
@@ -18,9 +18,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02426"/>
-        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02426"/>
-        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02426"/>
+        <PackageReference Include="DSharpPlus" Version="[5.0.0-nightly-02406, )"/>
+        <PackageReference Include="DSharpPlus.Commands" Version="[5.0.0-nightly-02406, )"/>
+        <PackageReference Include="DSharpPlus.Interactivity" Version="[5.0.0-nightly-02406, )"/>
     </ItemGroup>
 
     <ItemGroup>
