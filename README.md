@@ -48,6 +48,24 @@ To build the package from source, follow these steps:
 
 This package adds an extension method, `SendBetterPaginatedMessageAsync`, to the [SlashCommandContext](https://dsharpplus.github.io/DSharpPlus/api/DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext.html) class, enabling easy pagination in your bot commands.
 
+### SendBetterPaginatedMessageAsync Parameters
+
+- `context` (`SlashCommandContext`):  
+  The context of the slash command invocation, containing user information and the interaction context. This is required to send the initial response and track the user interaction.  
+  [More info on `SlashCommandContext`](https://dsharpplus.github.io/DSharpPlus/api/DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext.html)
+
+- `pages` (`IReadOnlyList<Page>`):  
+  A read-only list of [`Page`](https://dsharpplus.github.io/DSharpPlus/api/DSharpPlus.Interactivity.Page.html) objects. Each `Page` object contains the embed and optional components (buttons, select menus, etc.) to be displayed on a specific page of the paginated message. The content of each page is encapsulated in the `Page` object.
+
+- `additionalComponents` (`IReadOnlyList<DiscordComponent>?`, optional):  
+  Optional additional components (e.g., buttons, select menus) that can be added to the message. This can be used to add custom interactive elements like menus, or other buttons. Default is `null`.
+
+- `isEphemeral` (`bool`, optional):  
+  A flag indicating whether the paginated message should be sent as an ephemeral message. If set to `true`, the message will only be visible to the user who invoked the command. Default is `false`.
+
+- `allowUsageByAnyone` (`bool`, optional):  
+  A flag indicating whether any user can interact with the pagination buttons, or if the interaction should be restricted to the invoking user only. If set to `false`, only the user who invoked the command will be able to interact with the buttons. Default is `false`.
+
 ### Example Usage
 
 Here’s an example of how to use the package to send a paginated message within a command:

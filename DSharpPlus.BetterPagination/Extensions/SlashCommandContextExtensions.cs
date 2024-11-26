@@ -15,7 +15,7 @@ public static class SlashCommandContextExtensions
     /// <param name="context">The context of the slash command invocation, containing user information and interaction context.</param>
     /// <param name="pages">A read-only list of <see cref="Page"/> objects, each containing an embed to be displayed on the paginated message.</param>
     /// <param name="additionalComponents">Optional additional components (e.g., buttons, select menus) to be added to the message. Default is null.</param>
-    /// <param name="isEphemeral">A flag indicating whether this paginated message should be sent as an ephemeral message.</param>
+    /// <param name="isEphemeral">A flag indicating whether the paginated message should be sent as an ephemeral message. If set to true, the message will only be visible to the user who invoked the command. Default is false.</param>
     /// <param name="allowUsageByAnyone">A flag indicating whether any user can navigate the pagination, or restricts usage to the invoking user only. Default is false.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     /// <remarks>
