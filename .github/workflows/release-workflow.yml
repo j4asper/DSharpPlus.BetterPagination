@@ -24,8 +24,8 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Pack NuGet package
-        run: dotnet pack --configuration Release --no-build --output ./nupkg --version ${{ github.ref_name }}
+        run: dotnet pack --configuration Release --no-build --version ${{ github.ref_name }}
 
       - name: Publish NuGet package
         run: |
-          dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          dotnet nuget push ./DSharpPlus.BetterPagination/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
