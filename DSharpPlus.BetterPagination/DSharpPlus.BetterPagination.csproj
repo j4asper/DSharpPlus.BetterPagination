@@ -6,7 +6,8 @@
         <Nullable>enable</Nullable>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Authors>Jasper Onsberg Christiansen</Authors>
         <Description>This is an extension for better looking paginated messages for DSharpPlus Discord Bots.</Description>
         <RepositoryUrl>https://github.com/j4asper/DSharpPlus.BetterPagination</RepositoryUrl>
@@ -17,9 +18,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02426" />
-      <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02426" />
-      <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02426" />
+        <PackageReference Include="DSharpPlus" Version="5.0.0-nightly-02426"/>
+        <PackageReference Include="DSharpPlus.Commands" Version="5.0.0-nightly-02426"/>
+        <PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-02426"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>
