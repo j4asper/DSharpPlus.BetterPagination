@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    name: Build and Publish NuGet Package
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,12 +20,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build project
-        run: dotnet build --configuration Release
+      - name: Build
+        run: dotnet build --configuration Release /p:Version=${{ github.ref_name }}
 
-      - name: Pack NuGet package
-        run: dotnet pack --configuration Release --no-build --version ${{ github.ref_name }}
-
-      - name: Publish NuGet package
-        run: |
-          dotnet nuget push ./DSharpPlus.BetterPagination/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      - name: Pack
+        run: dotnet pack --configuration Release /p:Version=${{ github.ref_name }} --no-build --output .
+        
+      - name: Push
+        run: dotnet nuget push J4asper.DSharpPlus.BetterPagination.$${{ github.ref_name }}.nupkg --source
