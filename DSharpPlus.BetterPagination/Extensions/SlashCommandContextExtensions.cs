@@ -8,7 +8,7 @@ namespace DSharpPlus.BetterPagination.Extensions;
 
 public static class SlashCommandContextExtensions
 {
-    public static async Task SendSimplePaginatedMessage(
+    public static async Task SendBetterPaginatedMessageAsync(
         this SlashCommandContext context,
         IReadOnlyList<Page> pages,
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
