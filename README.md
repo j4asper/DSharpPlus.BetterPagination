@@ -9,6 +9,7 @@ This NuGet package provides an enhanced pagination experience for [DSharpPlus](h
     * [NuGet](#nuget)
     * [From Source](#from-source)
   * [Documentation](#documentation)
+    * [SendBetterPaginatedMessageAsync Parameters](#sendbetterpaginatedmessageasync-parameters)
     * [Example Usage](#example-usage)
 <!-- TOC -->
 
@@ -20,7 +21,6 @@ To install the package, open the terminal in your project and run the following 
 
 ```console
 dotnet add package J4asper.DSharpPlus.BetterPagination --version 1.0.0
-
 ```
 
 Alternatively, you can search for `J4asper.DSharpPlus.BetterPagination` in your IDE’s NuGet Package Manager.
@@ -33,16 +33,13 @@ To build the package from source, follow these steps:
 
     ```console
     git clone https://github.com/j4asper/DSharpPlus.BetterPagination.git
-    
     ```
 
 2.  In your project’s `.csproj` file, add the following reference:
 
     ```xml
     <ProjectReference Include="../DSharpPlus.BetterPagination/DSharpPlus.BetterPagination/DSharpPlus.BetterPagination.csproj" />
-    
     ```
-
 
 ## Documentation
 
@@ -60,7 +57,7 @@ This package adds an extension method, `SendBetterPaginatedMessageAsync`, to the
 - `additionalComponents` (`IReadOnlyList<DiscordComponent>?`, optional):  
   Optional additional components (e.g., buttons, select menus) that can be added to the message. This can be used to add custom interactive elements like menus, or other buttons. Default is `null`.
 
-- `isEphemeral` (`bool`, optional):  
+- `asEphemeral` (`bool`, optional):  
   A flag indicating whether the paginated message should be sent as an ephemeral message. If set to `true`, the message will only be visible to the user who invoked the command. Default is `false`.
 
 - `allowUsageByAnyone` (`bool`, optional):  
