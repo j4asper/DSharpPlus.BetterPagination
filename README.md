@@ -85,4 +85,4 @@ In this example:
 
 Example of paginated message with 4 pages and an additional button.
 
-![Paginated Example](.github/images/example.png)
+![Paginated Example](https://raw.githubusercontent.com/j4asper/DSharpPlus.BetterPagination/refs/heads/main/.github/images/example.png)
