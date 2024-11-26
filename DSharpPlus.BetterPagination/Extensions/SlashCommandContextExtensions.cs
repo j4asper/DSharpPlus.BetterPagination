@@ -8,6 +8,20 @@ namespace DSharpPlus.BetterPagination.Extensions;
 
 public static class SlashCommandContextExtensions
 {
+    /// <summary>
+    /// Sends a paginated message with forward and back buttons that allow users to navigate through pages of content.
+    /// The method supports an optional set of additional components (e.g., buttons) and restricts usage to the invoking user if required.
+    /// </summary>
+    /// <param name="context">The context of the slash command invocation, containing user information and interaction context.</param>
+    /// <param name="pages">A read-only list of <see cref="Page"/> objects, each containing an embed to be displayed on the paginated message.</param>
+    /// <param name="additionalComponents">Optional additional components (e.g., buttons, select menus) to be added to the message. Default is null.</param>
+    /// <param name="allowUsageByAnyone">A flag indicating whether any user can navigate the pagination, or restricts usage to the invoking user only. Default is false.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <remarks>
+    /// The method creates forward and back buttons to allow users to navigate between pages. It waits for user interaction (button clicks) and updates the message accordingly.
+    /// If no interaction occurs within the timeout period, the message is updated with a timeout response. 
+    /// If the <paramref name="allowUsageByAnyone"/> flag is set to false, only the user who invoked the command can interact with the buttons.
+    /// </remarks>
     public static async Task SendBetterPaginatedMessageAsync(
         this SlashCommandContext context,
         IReadOnlyList<Page> pages,
