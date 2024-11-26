@@ -11,7 +11,8 @@ public static class SlashCommandContextExtensions
     public static async Task SendSimplePaginatedMessage(
         this SlashCommandContext context,
         IReadOnlyList<Page> pages,
-        IReadOnlyList<DiscordComponent>? additionalComponents = null)
+        IReadOnlyList<DiscordComponent>? additionalComponents = null,
+        bool allowUsageByAnyone = false)
     {
         var pageCount = pages.Count;
         var currentPage = 1;
@@ -51,6 +52,12 @@ public static class SlashCommandContextExtensions
             }
             else
             {
+                if (!allowUsageByAnyone)
+                {
+                    if (response.Result.User.Id != context.User.Id)
+                        continue;
+                }
+                
                 if (response.Result.Id == backBtn.CustomId)
                     currentPage--;
 
