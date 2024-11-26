@@ -31,25 +31,24 @@ public static class SlashCommandContextExtensions
         bool allowUsageByAnyone = false)
     {
         var pageCount = pages.Count;
+        
         var currentPage = 1;
-
-        var pageEmbeds = pages.Select(x => x.Embed).ToArray();
-
+        
         var components = CreatePaginationComponents(currentPage, pageCount);
 
-        var message =
-            await SendInitialResponseAsync(context, pageEmbeds, components, additionalComponents, isEphemeral);
+        var message = await SendInitialResponseAsync(context, pages, components, additionalComponents, isEphemeral);
 
         var timedOut = false;
 
         while (!timedOut)
         {
             var response =
-                await message.WaitForButtonAsync(c => c.Id == components[0].CustomId || c.Id == components[1].CustomId);
+                await message.WaitForButtonAsync(c =>
+                    c.Id == components[0].CustomId || c.Id == components[2].CustomId);
 
             if (response.TimedOut)
             {
-                await SendTimeoutResponseAsync(message, pageEmbeds, pageCount, components, additionalComponents);
+                await SendTimeoutResponseAsync(message, pages, pageCount, components, additionalComponents);
                 
                 timedOut = true;
             }
@@ -64,11 +63,21 @@ public static class SlashCommandContextExtensions
                 if (response.Result.Id == components[2].CustomId)
                     currentPage++;
 
-                var updatedComponents = CreatePaginationComponents(currentPage, pageCount);
+                var updatedComponents = CreatePaginationComponents(currentPage, pageCount, components[2].CustomId, components[0].CustomId);
+                
                 var interactionResponse = new DiscordInteractionResponseBuilder()
-                    .AddEmbed(pageEmbeds[currentPage - 1])
                     .AddComponents(updatedComponents);
+                
+                var page = pages[currentPage - 1];
+                
+                interactionResponse.AddEmbed(page.Embed);
+                
+                if (page.Components.Count > 0)
+                    interactionResponse.AddComponents(page.Components);
 
+                if (string.IsNullOrEmpty(page.Content))
+                    interactionResponse.WithContent(page.Content);
+                
                 if (isEphemeral)
                     interactionResponse.AsEphemeral();
 
@@ -81,10 +90,13 @@ public static class SlashCommandContextExtensions
         }
     }
 
-    private static List<DiscordComponent> CreatePaginationComponents(int currentPage, int pageCount)
+    private static List<DiscordComponent> CreatePaginationComponents(int currentPage, int pageCount, string? forwardButtonId = null, string? backButtonId = null)
     {
-        var backBtn = ButtonHelpers.CreateBackButton(Guid.NewGuid().ToString(), currentPage);
-        var forwardBtn = ButtonHelpers.CreateForwardButton(Guid.NewGuid().ToString(), currentPage, pageCount);
+        forwardButtonId ??= Guid.NewGuid().ToString();
+        backButtonId ??= Guid.NewGuid().ToString();
+        
+        var backBtn = ButtonHelpers.CreateBackButton(backButtonId, currentPage);
+        var forwardBtn = ButtonHelpers.CreateForwardButton(forwardButtonId, currentPage, pageCount);
         var pageLabel = ButtonHelpers.CreatePageLabel(Guid.NewGuid().ToString(), currentPage, pageCount);
 
         return [backBtn, pageLabel, forwardBtn];
@@ -92,23 +104,32 @@ public static class SlashCommandContextExtensions
 
     private static async Task<DiscordMessage> SendInitialResponseAsync(
         SlashCommandContext context,
-        DiscordEmbed[] embeds,
+        IReadOnlyList<Page> pages,
         IReadOnlyList<DiscordComponent> components,
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
         bool isEphemeral = false)
     {
-        var responseBuilder = new DiscordInteractionResponseBuilder()
-            .AddEmbed(embeds[0])
+        var page = pages[0];
+        
+        var interactionResponse = new DiscordInteractionResponseBuilder()
             .AddComponents(components);
+        
+        interactionResponse.AddEmbed(page.Embed);
 
+        if (page.Components.Count > 0)
+            interactionResponse.AddComponents(page.Components);
+
+        if (string.IsNullOrEmpty(page.Content))
+            interactionResponse.WithContent(page.Content);
+        
         if (isEphemeral)
-            responseBuilder.AsEphemeral();
+            interactionResponse.AsEphemeral();
         
         if (additionalComponents != null)
-            responseBuilder.AddComponents(additionalComponents);
+            interactionResponse.AddComponents(additionalComponents);
 
         await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
-            responseBuilder);
+            interactionResponse);
 
         var message = await context.Interaction.GetOriginalResponseAsync();
         
@@ -117,15 +138,24 @@ public static class SlashCommandContextExtensions
 
     private static async Task SendTimeoutResponseAsync(
         DiscordMessage message,
-        DiscordEmbed[] embeds,
+        IReadOnlyList<Page> pages,
         int currentPage,
         IReadOnlyList<DiscordComponent> components,
         IReadOnlyList<DiscordComponent>? additionalComponents = null)
     {
+        var page = pages[currentPage - 1];
+        
         var timedOutResponse = new DiscordMessageBuilder()
-            .AddEmbed(embeds[currentPage - 1])
-            .AddComponents(components[0], components[1], components[2]);
+            .AddComponents(components);
+        
+        timedOutResponse.AddEmbed(page.Embed);
 
+        if (page.Components.Count > 0)
+            timedOutResponse.AddComponents(page.Components);
+
+        if (string.IsNullOrEmpty(page.Content))
+            timedOutResponse.WithContent(page.Content);
+        
         if (additionalComponents != null)
             timedOutResponse.AddComponents(additionalComponents);
 
