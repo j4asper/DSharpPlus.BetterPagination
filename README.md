@@ -47,7 +47,7 @@ This package adds an extension method, `SendBetterPaginatedMessageAsync`, to the
 
 ### SendBetterPaginatedMessageAsync Parameters
 
-- `context` (`SlashCommandContext`):  
+- `commandContext` (`SlashCommandContext`):  
   The context of the slash command invocation, containing user information and the interaction context. This is required to send the initial response and track the user interaction.  
   [More info on `SlashCommandContext`](https://dsharpplus.github.io/DSharpPlus/api/DSharpPlus.Commands.Processors.SlashCommands.SlashCommandContext.html)
 
@@ -81,7 +81,7 @@ public async ValueTask PaginatedExampleCommand(SlashCommandContext context)
     List<Page> pages =
     [
         new() { Embed = embedPageOne },
-        new() { Embed = embedPageTwo }
+        new() { Embed = embedPageTwo, Content = "Text content in message" }
     ];
 
     // Send the paginated message
