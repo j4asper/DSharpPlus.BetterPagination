@@ -8,29 +8,33 @@ namespace DSharpPlus.BetterPagination.Extensions;
 
 public static class SlashCommandContextExtensions
 {
-    public static async Task SendSimplePaginatedMessage(this SlashCommandContext context, IReadOnlyList<Page> pages, IReadOnlyList<DiscordComponent>? additionalComponents = null)
+    public static async Task SendSimplePaginatedMessage(
+        this SlashCommandContext context,
+        IReadOnlyList<Page> pages,
+        IReadOnlyList<DiscordComponent>? additionalComponents = null)
     {
         var pageCount = pages.Count;
         var currentPage = 1;
 
         var pageEmbeds = pages.Select(x => x.Embed).ToArray();
-        
+
         var forwardBtn = ButtonHelpers.CreateForwardButton(Guid.NewGuid().ToString(), currentPage, pageCount);
-        
+
         var backBtn = ButtonHelpers.CreateBackButton(Guid.NewGuid().ToString(), currentPage);
 
         var pageLabel = ButtonHelpers.CreatePageLabel(Guid.NewGuid().ToString(), currentPage, pageCount);
-        
+
         List<DiscordComponent> components = [backBtn, pageLabel, forwardBtn];
-        
+
         var message = await SendInitialResponseAsync(context, pageEmbeds, components, additionalComponents);
-        
+
         var timedOut = false;
-        
+
         while (!timedOut)
         {
-            var response = await message.WaitForButtonAsync(c => c.Id == forwardBtn.CustomId || c.Id == backBtn.CustomId);
-            
+            var response =
+                await message.WaitForButtonAsync(c => c.Id == forwardBtn.CustomId || c.Id == backBtn.CustomId);
+
             if (response.TimedOut)
             {
                 await SendTimeoutResponseAsync(
@@ -42,7 +46,7 @@ public static class SlashCommandContextExtensions
                     pageLabel.CustomId,
                     forwardBtn.CustomId,
                     additionalComponents);
-                
+
                 timedOut = true;
             }
             else
@@ -59,32 +63,46 @@ public static class SlashCommandContextExtensions
                         ButtonHelpers.CreateBackButton(backBtn.CustomId, currentPage),
                         ButtonHelpers.CreatePageLabel(pageLabel.CustomId, currentPage, pageCount),
                         ButtonHelpers.CreateForwardButton(forwardBtn.CustomId, currentPage, pageCount));
-            
+
                 if (additionalComponents != null)
                     interactionResponse.AddComponents(additionalComponents);
-                
-                await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, interactionResponse);
+
+                await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage,
+                    interactionResponse);
             }
         }
     }
 
-    private static async Task<DiscordMessage> SendInitialResponseAsync(SlashCommandContext context, DiscordEmbed[] embeds, List<DiscordComponent> components, IReadOnlyList<DiscordComponent>? additionalComponents = null)
+    private static async Task<DiscordMessage> SendInitialResponseAsync(
+        SlashCommandContext context,
+        DiscordEmbed[] embeds,
+        IReadOnlyList<DiscordComponent> components,
+        IReadOnlyList<DiscordComponent>? additionalComponents = null)
     {
         var responseBuilder = new DiscordInteractionResponseBuilder()
             .AddEmbed(embeds[0])
             .AddComponents(components);
-        
+
         if (additionalComponents != null)
             responseBuilder.AddComponents(additionalComponents);
-        
-        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, responseBuilder);
-        
+
+        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource,
+            responseBuilder);
+
         var message = await context.Interaction.GetOriginalResponseAsync();
 
         return message;
     }
-    
-    private static async Task SendTimeoutResponseAsync(DiscordMessage message, DiscordEmbed[] embeds, int currentPage, int pageCount, string backBtnId, string pageLabelId, string forwardBtnId, IReadOnlyList<DiscordComponent>? additionalComponents = null)
+
+    private static async Task SendTimeoutResponseAsync(
+        DiscordMessage message,
+        DiscordEmbed[] embeds,
+        int currentPage,
+        int pageCount,
+        string backBtnId,
+        string pageLabelId,
+        string forwardBtnId,
+        IReadOnlyList<DiscordComponent>? additionalComponents = null)
     {
         var timedOutResponse = new DiscordMessageBuilder()
             .AddEmbed(embeds[currentPage - 1])
