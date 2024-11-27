@@ -1,4 +1,4 @@
-using DSharpPlus.BetterPagination.Helpers;
+using DSharpPlus.BetterPagination.Handlers;
 using DSharpPlus.Commands;
 using DSharpPlus.Commands.Processors.SlashCommands;
 using DSharpPlus.Entities;
@@ -32,95 +32,99 @@ public static class CommandContextExtensions
         bool allowUsageByAnyone = false)
     {
         var context = commandContext as SlashCommandContext
-                                      ?? throw new InvalidCastException("CommandContext is not a SlashCommandContext.");
-        
-        var pageCount = pages.Count;
-        
-        var currentPage = 1;
-        
-        var components = CreatePaginationComponents(currentPage, pageCount);
+                      ?? throw new InvalidCastException("CommandContext is not a SlashCommandContext.");
 
-        var message = await SendInitialResponseAsync(context, pages, components, additionalComponents, asEphemeral);
+        var paginationHandler = new PaginationHandler(pages);
 
-        var timedOut = false;
+        var initialResponse = await SendPaginatedMessageAsync(
+            context,
+            paginationHandler.GetCurrentPage(),
+            paginationHandler.GetPaginationButtons(),
+            additionalComponents,
+            asEphemeral,
+            isInitialMessage: true);
 
-        while (!timedOut)
+        var isTimedOut = false;
+        
+        while (!isTimedOut)
         {
-            var response =
-                await message.WaitForButtonAsync(c =>
-                    c.Id == components[0].CustomId || c.Id == components[2].CustomId);
+            var interactionResponse = await initialResponse!.WaitForButtonAsync(c =>
+                    paginationHandler.GetPaginationButtons().Any(x => x.CustomId == c.Id));
 
-            if (response.TimedOut)
+            if (interactionResponse.TimedOut)
             {
-                await SendTimeoutResponseAsync(message, pages, pageCount, components, additionalComponents);
+                await SendPaginatedMessageAsync(
+                    context,
+                    paginationHandler.GetCurrentPage(),
+                    paginationHandler.GetPaginationButtons(),
+                    additionalComponents,
+                    originalMessage: initialResponse,
+                    isTimeoutMessage: true);
 
-                timedOut = true;
+                isTimedOut = true;
             }
             else
             {
-                if (!allowUsageByAnyone && response.Result.User.Id != context.User.Id)
+                if (!allowUsageByAnyone && interactionResponse.Result.User.Id != context.User.Id)
                     continue;
 
-                if (response.Result.Id == components[0].CustomId)
-                    currentPage--;
+                Page? pageToShow = null;
 
-                if (response.Result.Id == components[2].CustomId)
-                    currentPage++;
+                if (interactionResponse.Result.Id == paginationHandler.BackButton.CustomId)
+                    pageToShow = paginationHandler.GetPreviousPage();
 
-                var updatedComponents = CreatePaginationComponents(currentPage, pageCount, components[2].CustomId, components[0].CustomId);
-
-                var interactionResponse = new DiscordInteractionResponseBuilder()
-                    .AddComponents(updatedComponents)
-                    .WithPageContent(pages[currentPage - 1])
-                    .WithPaginationArgs(additionalComponents, asEphemeral);
-
-                await response.Result.Interaction.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, interactionResponse);
+                if (interactionResponse.Result.Id == paginationHandler.ForwardButton.CustomId)
+                    pageToShow = paginationHandler.GetNextPage();
+                
+                await SendPaginatedMessageAsync(
+                    context,
+                    pageToShow!,
+                    paginationHandler.GetPaginationButtons(),
+                    additionalComponents,
+                    asEphemeral,
+                    interaction: interactionResponse.Result.Interaction);
             }
         }
     }
 
-    private static IReadOnlyList<DiscordComponent> CreatePaginationComponents(int currentPage, int pageCount, string? forwardButtonId = null, string? backButtonId = null)
-    {
-        forwardButtonId ??= Guid.NewGuid().ToString();
-        backButtonId ??= Guid.NewGuid().ToString();
-        
-        var backBtn = ButtonHelpers.CreateBackButton(backButtonId, currentPage);
-        var forwardBtn = ButtonHelpers.CreateForwardButton(forwardButtonId, currentPage, pageCount);
-        var pageLabel = ButtonHelpers.CreatePageLabel(Guid.NewGuid().ToString(), currentPage, pageCount);
-
-        return [backBtn, pageLabel, forwardBtn];
-    }
-
-    private static async Task<DiscordMessage> SendInitialResponseAsync(
+    private static async Task<DiscordMessage?> SendPaginatedMessageAsync(
         SlashCommandContext context,
-        IReadOnlyList<Page> pages,
-        IReadOnlyList<DiscordComponent> components,
+        Page currentPage,
+        IReadOnlyList<DiscordComponent> paginationComponents,
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
-        bool asEphemeral = false)
+        bool asEphemeral = false,
+        DiscordInteraction? interaction = null,
+        bool isInitialMessage = false,
+        bool isTimeoutMessage = false,
+        DiscordMessage? originalMessage = null)
     {
-        var interactionResponse = new DiscordInteractionResponseBuilder()
-            .AddComponents(components)
-            .WithPageContent(pages[0])
-            .WithPaginationArgs(additionalComponents, asEphemeral);
+        if (isTimeoutMessage && originalMessage is not null)
+        {
+            var response = new DiscordMessageBuilder()
+                .AddComponents(paginationComponents)
+                .WithPaginationArgs(currentPage, additionalComponents);
+
+            await originalMessage.ModifyAsync(response);
+        }
+        else
+        {
+            var response = new DiscordInteractionResponseBuilder()
+                .AddComponents(paginationComponents)
+                .WithPageContent(currentPage)
+                .WithPaginationArgs(additionalComponents, asEphemeral);
+
+            if (isInitialMessage)
+            {
+                await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, response);
+
+                var message = await context.Interaction.GetOriginalResponseAsync();
+
+                return message;
+            }
+            
+            await interaction!.CreateResponseAsync(DiscordInteractionResponseType.UpdateMessage, response);
+        }
         
-        await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, interactionResponse);
-
-        var message = await context.Interaction.GetOriginalResponseAsync();
-
-        return message;
-    }
-
-    private static async Task SendTimeoutResponseAsync(
-        DiscordMessage message,
-        IReadOnlyList<Page> pages,
-        int currentPage,
-        IReadOnlyList<DiscordComponent> components,
-        IReadOnlyList<DiscordComponent>? additionalComponents = null)
-    {
-        var timedOutResponse = new DiscordMessageBuilder()
-            .AddComponents(components)
-            .WithPaginationArgs(pages[currentPage - 1], additionalComponents);
-
-        await message.ModifyAsync(timedOutResponse);
+        return null;
     }
 }
