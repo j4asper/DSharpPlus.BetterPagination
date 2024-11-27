@@ -98,3 +98,7 @@ In this example:
 Example of paginated message with 4 pages and an additional button.
 
 ![Paginated Example](https://raw.githubusercontent.com/j4asper/DSharpPlus.BetterPagination/refs/heads/main/.github/images/example.png)
+
+### Other Examples
+
+My Open-Source bot [KanbanCord](https://github.com/j4asper/KanbanCord) uses this extension for pagination. Usage of it can be found [here](https://github.com/j4asper/KanbanCord/blob/main/KanbanCord.Bot/Commands/HelpCommand.cs) and [here](https://github.com/j4asper/KanbanCord/blob/main/KanbanCord.Bot/Commands/Task/TaskViewCommand.cs).
