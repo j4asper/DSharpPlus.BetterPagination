@@ -50,7 +50,7 @@ public static class CommandContextExtensions
         {
             var interactionResponse = await initialResponse!.WaitForButtonAsync(c =>
                     paginationHandler.GetPaginationButtons().Any(x => x.CustomId == c.Id));
-
+            
             if (interactionResponse.TimedOut)
             {
                 await SendPaginatedMessageAsync(
@@ -65,16 +65,21 @@ public static class CommandContextExtensions
             }
             else
             {
-                if (!allowUsageByAnyone && interactionResponse.Result.User.Id != context.User.Id)
+                var interactionResult = interactionResponse.Result;
+                
+                if (!allowUsageByAnyone && interactionResult.User.Id != context.User.Id)
                     continue;
 
                 Page? pageToShow = null;
 
-                if (interactionResponse.Result.Id == paginationHandler.BackButton.CustomId)
+                if (interactionResult.Id == paginationHandler.BackButton.CustomId)
                     pageToShow = paginationHandler.GetPreviousPage();
 
-                if (interactionResponse.Result.Id == paginationHandler.ForwardButton.CustomId)
+                if (interactionResult.Id == paginationHandler.ForwardButton.CustomId)
                     pageToShow = paginationHandler.GetNextPage();
+                
+                if (interactionResult.Id == paginationHandler.PageLabel.CustomId)
+                    await paginationHandler.ShowPageSelector(context);
                 
                 await SendPaginatedMessageAsync(
                     context,
@@ -82,7 +87,7 @@ public static class CommandContextExtensions
                     paginationHandler.GetPaginationButtons(),
                     additionalComponents,
                     asEphemeral,
-                    interaction: interactionResponse.Result.Interaction);
+                    interaction: interactionResult.Interaction);
             }
         }
     }

@@ -32,6 +32,6 @@ internal static class ButtonHelpers
             DiscordButtonStyle.Secondary,
             id,
             $"{currentPage}/{pageCount}",
-            true);
+            false);
     }
 }
