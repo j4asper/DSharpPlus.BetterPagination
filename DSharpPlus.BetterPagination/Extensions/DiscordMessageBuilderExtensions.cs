@@ -8,17 +8,20 @@ internal static class DiscordMessageBuilderExtensions
     internal static DiscordMessageBuilder WithPaginationArgs(
         this DiscordMessageBuilder builder,
         Page page,
-        IReadOnlyList<DiscordComponent>? additionalComponents)
+        DiscordActionRowComponent? additionalComponents)
     {
         builder.AddEmbed(page.Embed);
 
         if (page.Components.Count > 0)
-            builder.AddComponents(page.Components);
+        {
+            foreach (var component in page.Components)
+                builder.AddActionRowComponent(component);
+        }
 
         builder.WithContent(page.Content);
         
         if (additionalComponents != null)
-            builder.AddComponents(additionalComponents);
+            builder.AddActionRowComponent(additionalComponents);
         
         return builder;
     }

@@ -41,5 +41,5 @@ internal class PaginationHandler
         return GetCurrentPage();
     }
     
-    internal IReadOnlyList<DiscordButtonComponent> GetPaginationButtons() => [BackButton, PageLabel, ForwardButton];
+    internal DiscordActionRowComponent GetPaginationButtons() => new([BackButton, PageLabel, ForwardButton]);
 }

@@ -49,7 +49,7 @@ public static class CommandContextExtensions
         while (!isTimedOut)
         {
             var interactionResponse = await initialResponse!.WaitForButtonAsync(c =>
-                    paginationHandler.GetPaginationButtons().Any(x => x.CustomId == c.Id));
+                    paginationHandler.GetPaginationButtons().Components.Any(x => x.CustomId == c.Id));
 
             if (interactionResponse.TimedOut)
             {
@@ -90,7 +90,7 @@ public static class CommandContextExtensions
     private static async Task<DiscordMessage?> SendPaginatedMessageAsync(
         SlashCommandContext context,
         Page currentPage,
-        IReadOnlyList<DiscordComponent> paginationComponents,
+        DiscordActionRowComponent paginationComponent,
         IReadOnlyList<DiscordComponent>? additionalComponents = null,
         bool asEphemeral = false,
         DiscordInteraction? interaction = null,
@@ -101,18 +101,19 @@ public static class CommandContextExtensions
         if (isTimeoutMessage && originalMessage is not null)
         {
             var response = new DiscordMessageBuilder()
-                .AddComponents(paginationComponents)
-                .WithPaginationArgs(currentPage, additionalComponents);
+                .WithPaginationArgs(currentPage, new DiscordActionRowComponent(additionalComponents ?? []));
 
+            response.AddActionRowComponent(paginationComponent);
+            
             await originalMessage.ModifyAsync(response);
         }
         else
         {
             var response = new DiscordInteractionResponseBuilder()
-                .AddComponents(paginationComponents)
                 .WithPageContent(currentPage)
-                .WithPaginationArgs(additionalComponents, asEphemeral);
-
+                .AddActionRowComponent(paginationComponent)
+                .WithPaginationArgs(new DiscordActionRowComponent(additionalComponents ?? []), asEphemeral);
+            
             if (isInitialMessage)
             {
                 await context.Interaction.CreateResponseAsync(DiscordInteractionResponseType.ChannelMessageWithSource, response);

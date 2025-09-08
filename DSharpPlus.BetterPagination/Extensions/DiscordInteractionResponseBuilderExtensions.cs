@@ -10,7 +10,12 @@ internal static class DiscordInteractionResponseBuilderExtensions
         builder.AddEmbed(page.Embed);
 
         if (page.Components.Count > 0)
-            builder.AddComponents(page.Components);
+        {
+            foreach (var component in page.Components)
+            {
+                builder.AddActionRowComponent(component);
+            }
+        }
 
         builder.WithContent(page.Content);
         
@@ -19,14 +24,16 @@ internal static class DiscordInteractionResponseBuilderExtensions
 
     internal static DiscordInteractionResponseBuilder WithPaginationArgs(
         this DiscordInteractionResponseBuilder builder,
-        IReadOnlyList<DiscordComponent>? additionalComponents,
+        DiscordActionRowComponent? additionalComponents,
         bool asEphemeral)
     {
         if (asEphemeral)
             builder.AsEphemeral();
 
         if (additionalComponents != null)
-            builder.AddComponents(additionalComponents);
+        {
+            builder.AddActionRowComponent(additionalComponents);
+        }
         
         return builder;
     }
