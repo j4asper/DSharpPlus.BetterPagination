@@ -30,7 +30,7 @@ internal static class DiscordInteractionResponseBuilderExtensions
         if (asEphemeral)
             builder.AsEphemeral();
 
-        if (additionalComponents != null)
+        if (additionalComponents is { Components.Count: > 0 })
         {
             builder.AddActionRowComponent(additionalComponents);
         }

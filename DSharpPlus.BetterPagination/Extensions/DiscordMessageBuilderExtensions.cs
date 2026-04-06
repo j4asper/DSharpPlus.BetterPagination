@@ -20,7 +20,7 @@ internal static class DiscordMessageBuilderExtensions
 
         builder.WithContent(page.Content);
         
-        if (additionalComponents != null)
+        if (additionalComponents is { Components.Count: > 0 })
             builder.AddActionRowComponent(additionalComponents);
         
         return builder;
